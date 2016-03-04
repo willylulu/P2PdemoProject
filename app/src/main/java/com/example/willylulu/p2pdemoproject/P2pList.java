@@ -24,7 +24,7 @@ public class P2pList implements WifiP2pManager.PeerListListener{
             this.parent.exception("Not found peers!");
         }
         else{
-            this.parent.getPeersSuccess(peers);
+            this.parent.getPeersSuccess();
         }
     }
     public List<WifiP2pDevice> getPeers(){

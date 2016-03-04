@@ -3,9 +3,12 @@ package com.example.willylulu.p2pdemoproject;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pConfig;
+import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
+
+import java.util.List;
 
 /**
  * Created by willylulu on 2016/3/2.
@@ -38,9 +41,9 @@ public class P2pBroadCast extends BroadcastReceiver{
 
     private void p2pDetectFailure(int reason) {
         switch (reason){
-            case 1: this.activity.addLog("P2P_UNSUPPORTED");
-            case 0: this.activity.addLog("P2P_ERROR");
-            case 2: this.activity.addLog("P2P_BUSY");
+            case 1: this.activity.addLog("P2P_UNSUPPORTED");break;
+            case 0: this.activity.addLog("P2P_ERROR");break;
+            case 2: this.activity.addLog("P2P_BUSY");break;
         }
     }
 
@@ -76,12 +79,29 @@ public class P2pBroadCast extends BroadcastReceiver{
         this.activity.addLog(s);
     }
 
-    public void getPeersSuccess(WifiP2pDeviceList peers) {
+    public void getPeersSuccess() {
         if(p2pList.getPeers().size()>0){
-            this.activity.addLog("List of device: ");
-            for(int i=0;i<p2pList.getPeers().size();i++){
-                this.activity.addLog(p2pList.getPeers().get(i).deviceName);
-            }
+            this.activity.addLog("Now you can scan devices!");
+            this.activity.addButton("Show");
         }
+    }
+    public void p2PConnect(WifiP2pDevice wifiP2pDevice) {
+        WifiP2pConfig config = new WifiP2pConfig();
+        config.deviceAddress = wifiP2pDevice.deviceAddress;
+        this.wifiP2pManager.connect(this.channel, config, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                activity.addLog("Connection success!");
+            }
+
+            @Override
+            public void onFailure(int reason) {
+                activity.addLog("Connection Fail! Reason: " + reason);
+            }
+        });
+    }
+
+    public List<WifiP2pDevice> getPeers() {
+        return p2pList.getPeers();
     }
 }
