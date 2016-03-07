@@ -48,6 +48,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        Button create = (Button)findViewById(R.id.create);
+        create.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                createG();
+            }
+        });
+
         wifiP2pManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         channel = wifiP2pManager.initialize(this, getMainLooper(), null);
         p2pBroadCast = new P2pBroadCast(wifiP2pManager,channel,this);
@@ -60,6 +69,11 @@ public class MainActivity extends AppCompatActivity {
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
         addLog("intent filter finished");
     }
+
+    private void createG() {
+        this.p2pBroadCast.createG();
+    }
+
     /* register the broadcast receiver with the intent values to be matched */
     @Override
     protected void onResume() {

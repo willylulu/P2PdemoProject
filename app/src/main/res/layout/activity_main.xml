@@ -67,6 +67,12 @@
                 android:layout_height="wrap_content"
                 android:text="show"
                 android:id="@+id/show" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Create"
+                android:id="@+id/create" />
         </LinearLayout>
     </ScrollView>
 
