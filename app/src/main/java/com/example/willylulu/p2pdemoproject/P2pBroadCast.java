@@ -10,6 +10,12 @@ import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+
 /**
  * Created by willylulu on 2016/3/2.
  */
@@ -18,8 +24,10 @@ public class P2pBroadCast extends BroadcastReceiver{
     private Channel channel;
     private MainActivity activity;
     public P2pList p2pList;
+    private ServerSocket serverSocket;
+    private Socket socket;
     public P2pBroadCast(WifiP2pManager manager, Channel channel,
-                      MainActivity activity){
+                      final MainActivity activity){
         super();
         this.wifiP2pManager = manager;
         this.channel = channel;
@@ -37,6 +45,20 @@ public class P2pBroadCast extends BroadcastReceiver{
                 p2pDetectFailure(reason);
             }
         });
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                activity.addLog("Thread running");
+                try {
+                    serverSocket = new ServerSocket(8888);
+                    socket = serverSocket.accept();
+                    activity.addLog("dick");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
     }
 
     private void p2pDetectFailure(int reason) {
@@ -93,8 +115,6 @@ public class P2pBroadCast extends BroadcastReceiver{
                     public void onConnectionInfoAvailable(final WifiP2pInfo info) {
 
                         // InetAddress from WifiP2pInfo struct.
-                        String groupOwnerAddress = info.groupOwnerAddress.getHostAddress();
-
                         // After the group negotiation, we can determine the group owner.
                         if (info.groupFormed && info.isGroupOwner) {
                             // Do whatever tasks are specific to the group owner.
@@ -106,6 +126,19 @@ public class P2pBroadCast extends BroadcastReceiver{
                             // you'll want to create a client thread that connects to the group
                             // owner.
                             activity.addLog("Client");
+                            InetAddress groupOwnerAddress = info.groupOwnerAddress;
+                            String s=groupOwnerAddress.getHostAddress();
+                            int port = 8888;
+                            activity.addLog(s);
+                            socket  = new Socket();
+                            try {
+                                socket.bind(null);
+                                activity.addLog(socket.getLocalAddress().toString());
+                                activity.addLog(socket.getInetAddress().toString());
+                                //socket.connect(new InetSocketAddress(s, port), 500);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 });
