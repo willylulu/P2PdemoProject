@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 
@@ -17,7 +18,7 @@ public class P2pBroadCast extends BroadcastReceiver{
     private WifiP2pManager wifiP2pManager;
     private Channel channel;
     private MainActivity activity;
-    private P2pList p2pList;
+    public P2pList p2pList;
     public P2pBroadCast(WifiP2pManager manager, Channel channel,
                       MainActivity activity){
         super();
@@ -25,7 +26,7 @@ public class P2pBroadCast extends BroadcastReceiver{
         this.channel = channel;
         this.activity = activity;
         this.p2pList = new P2pList(this);
-        this.wifiP2pManager.discoverPeers(this.channel,new WifiP2pManager.ActionListener(){
+        this.wifiP2pManager.discoverPeers(this.channel, new WifiP2pManager.ActionListener() {
 
             @Override
             public void onSuccess() {
@@ -41,9 +42,9 @@ public class P2pBroadCast extends BroadcastReceiver{
 
     private void p2pDetectFailure(int reason) {
         switch (reason){
-            case 1: this.activity.addLog("P2P_UNSUPPORTED");break;
-            case 0: this.activity.addLog("P2P_ERROR");break;
-            case 2: this.activity.addLog("P2P_BUSY");break;
+            case 1: this.activity.addLog("P2P_UNSUPPORTED");
+            case 0: this.activity.addLog("P2P_ERROR");
+            case 2: this.activity.addLog("P2P_BUSY");
         }
     }
 
@@ -53,7 +54,7 @@ public class P2pBroadCast extends BroadcastReceiver{
 
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        this.activity.addLog("Receive:\n"+action);
+        this.activity.addLog("Receive:\n" + action);
         if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
             int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
             if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
@@ -80,28 +81,24 @@ public class P2pBroadCast extends BroadcastReceiver{
     }
 
     public void getPeersSuccess() {
-        if(p2pList.getPeers().size()>0){
-            this.activity.addLog("Now you can scan devices!");
-            this.activity.addButton("Show");
-        }
+        this.activity.addLog("Found success!");
     }
+
     public void p2PConnect(WifiP2pDevice wifiP2pDevice) {
+        WifiP2pDevice device;
         WifiP2pConfig config = new WifiP2pConfig();
         config.deviceAddress = wifiP2pDevice.deviceAddress;
-        this.wifiP2pManager.connect(this.channel, config, new WifiP2pManager.ActionListener() {
+        wifiP2pManager.connect(channel, config, new WifiP2pManager.ActionListener() {
+
             @Override
             public void onSuccess() {
-                activity.addLog("Connection success!");
+                activity.addLog("Connect success!!!");
             }
 
             @Override
             public void onFailure(int reason) {
-                activity.addLog("Connection Fail! Reason: " + reason);
+                activity.addLog("Connect Fail!!!");
             }
         });
-    }
-
-    public List<WifiP2pDevice> getPeers() {
-        return p2pList.getPeers();
     }
 }

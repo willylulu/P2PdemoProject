@@ -1,5 +1,6 @@
 package com.example.willylulu.p2pdemoproject;
 
+import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pManager;
@@ -12,7 +13,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -21,12 +21,11 @@ public class MainActivity extends AppCompatActivity {
     private P2pBroadCast p2pBroadCast;
     private IntentFilter intentFilter;
     private MainActivity self;
-    private List<String> BS;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        addLog("starting log v10");
+        addLog("starting log v9");
         self = this;
         Button reset = (Button)findViewById(R.id.reset);
         reset.setOnClickListener(new View.OnClickListener() {
@@ -34,14 +33,20 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 TextView textView = (TextView)findViewById(R.id.Log_text);
                 textView.setText("Reset\n");
-                unregisterReceiver(p2pBroadCast);
                 wifiP2pManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
                 channel = wifiP2pManager.initialize(self, getMainLooper(), null);
                 p2pBroadCast = new P2pBroadCast(wifiP2pManager,channel,self);
-                registerReceiver(p2pBroadCast, intentFilter);
             }
         });
-        BS = new ArrayList<>();
+
+        Button show = (Button)findViewById(R.id.show);
+        show.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                addDevices();
+            }
+        });
 
         wifiP2pManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         channel = wifiP2pManager.initialize(this, getMainLooper(), null);
@@ -73,32 +78,13 @@ public class MainActivity extends AppCompatActivity {
         temp+=log+"\n";
         textView.setText(temp);
     }
-
-    public void addDevices() {
-        addLog("Add Buttons!");
-        List<WifiP2pDevice> peers = this.p2pBroadCast.getPeers();
-        LinearLayout l = (LinearLayout)findViewById(R.id.devices);
-        l.removeAllViews();
-        for (int i=0;i<peers.size();i++){
-            WifiP2pDevice wifiP2pDevice = peers.get(i);
-            DeviceButton deviceButton = new DeviceButton(this,this.p2pBroadCast,wifiP2pDevice);
-            l.addView(deviceButton);
-        }
-    }
-
-    public void addButton(String text) {
-        LinearLayout l = (LinearLayout)findViewById(R.id.Buttons);
-        if(text.equals("Show") && BS.indexOf(text)==-1){
-            Button button = new Button(this);
-            button.setText(text);
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    addDevices();
-                }
-            });
-            l.addView(button);
-            BS.add(text);
+    public void addDevices(){
+        this.addLog("addDevices!");
+        List<WifiP2pDevice> l = p2pBroadCast.p2pList.getPeers();
+        for(int i=0;i<l.size();i++){
+            DeviceButton deviceButton  = new DeviceButton(this,p2pBroadCast,l.get(i));
+            LinearLayout ll = (LinearLayout) findViewById(R.id.devices);
+            ll.addView(deviceButton);
         }
     }
 }
