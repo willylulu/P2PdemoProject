@@ -9,6 +9,7 @@ import android.content.Context;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -24,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        addLog("starting log victory!!!");
+        addLog("starting log ver 10.0!");
         self = this;
         Button reset = (Button)findViewById(R.id.reset);
         reset.setOnClickListener(new View.OnClickListener() {
@@ -47,23 +48,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button socket = (Button)findViewById(R.id.socket);
-        socket.setOnClickListener(new View.OnClickListener(){
+        Button send = (Button)findViewById(R.id.send);
+        send.setOnClickListener(new View.OnClickListener(){
 
             @Override
             public void onClick(View v) {
-                p2pBroadCast.SocketInvatation();
+                EditText editText = (EditText)findViewById(R.id.editText);
+                p2pBroadCast.sendText(editText.getText().toString());
             }
         });
-
-        Button message = (Button)findViewById(R.id.message);
-        message.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                addLog(p2pBroadCast.message);
-            }
-        });
-
+        send.setVisibility(View.INVISIBLE);
+        EditText editText = (EditText)findViewById(R.id.editText);
+        editText.setVisibility(View.INVISIBLE);
         wifiP2pManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         channel = wifiP2pManager.initialize(this, getMainLooper(), null);
         p2pBroadCast = new P2pBroadCast(wifiP2pManager,channel,this);
@@ -90,11 +86,16 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         unregisterReceiver(p2pBroadCast);
     }
-    public void addLog(String log){
-        TextView textView = (TextView)findViewById(R.id.Log_text);
-        String temp = (String) textView.getText();
-        temp+=log+"\n";
-        textView.setText(temp);
+    public void addLog(final String log){
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                TextView textView = (TextView) findViewById(R.id.Log_text);
+                String temp = (String) textView.getText();
+                temp += log + "\n";
+                textView.setText(temp);
+            }
+        });
     }
     public void addDevices(){
         this.addLog("addDevices!");
@@ -104,5 +105,16 @@ public class MainActivity extends AppCompatActivity {
             LinearLayout ll = (LinearLayout) findViewById(R.id.devices);
             ll.addView(deviceButton);
         }
+    }
+    public void OpenInput(){
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Button send = (Button) findViewById(R.id.send);
+                send.setVisibility(View.VISIBLE);
+                EditText editText = (EditText) findViewById(R.id.editText);
+                editText.setVisibility(View.VISIBLE);
+            }
+        });
     }
 }

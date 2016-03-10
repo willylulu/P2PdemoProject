@@ -9,13 +9,8 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
@@ -28,7 +23,8 @@ public class P2pBroadCast extends BroadcastReceiver{
     public P2pList p2pList;
     private P2pBroadCast self;
     private WifiP2pInfo info;
-    private ServerSocket serverSocket;
+    private ServerThread serverThread;
+    private ConnectThread connectThread;
     public String message;
     public P2pBroadCast(WifiP2pManager manager, Channel channel,
                       final MainActivity activity){
@@ -50,9 +46,11 @@ public class P2pBroadCast extends BroadcastReceiver{
                 p2pDetectFailure(reason);
             }
         });
+        this.serverThread = new ServerThread(activity);
+        this.serverThread.start();
     }
     public void SocketListen(){
-        JavaTCPServer jsp = new JavaTCPServer();
+
     }
     private void p2pDetectFailure(int reason) {
         switch (reason){
@@ -118,6 +116,7 @@ public class P2pBroadCast extends BroadcastReceiver{
                             // owner.
                             activity.addLog("Client!");
                             self.info = info;
+                            SocketInvatation();
                         }
                     }
                 });
@@ -133,13 +132,8 @@ public class P2pBroadCast extends BroadcastReceiver{
                     Socket Rsocket = new Socket();
                     Rsocket.bind(null);
                     Rsocket.connect(new InetSocketAddress(info.groupOwnerAddress.getHostAddress(), 8888), 500);
-                    BufferedReader bufferReader = new BufferedReader(new InputStreamReader(Rsocket.getInputStream()));
-                    PrintWriter writer = new PrintWriter(Rsocket.getOutputStream());
-                    writer.println(new StringBuffer("Dick"));
-                    writer.flush();
-                    while (Rsocket.isConnected()){
-                        message = bufferReader.readLine();
-                    }
+                    connectThread = new ConnectThread(Rsocket,activity);
+                    connectThread.start();
                 } catch (IOException e) {
                     e.printStackTrace();
                     e.printStackTrace();
@@ -171,5 +165,18 @@ public class P2pBroadCast extends BroadcastReceiver{
                 activity.addLog("Connect Fail!!!");
             }
         });
+    }
+
+    public void sendText(String text) {
+        if (info.groupFormed && info.isGroupOwner) {
+            // Do whatever tasks are specific to the group owner.
+            // One common case is creating a server thread and accepting
+            // incoming connection
+        } else if (info.groupFormed) {
+            // The other device acts as the client. In this case,
+            // you'll want to create a client thread that connects to the group
+            // owner.
+            connectThread.sendText(text);
+        }
     }
 }

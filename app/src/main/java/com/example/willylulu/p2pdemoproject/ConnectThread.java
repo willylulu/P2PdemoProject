@@ -1,7 +1,5 @@
 package com.example.willylulu.p2pdemoproject;
 
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,10 +31,18 @@ public class ConnectThread extends Thread{
             try {
                 String read = bufferedReader.readLine();
                 mainActivity.addLog(read);
+                if(read.equals("Welcome!")){
+                    mainActivity.OpenInput();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
         }
+    }
+
+    public void sendText(String string){
+        printWriter.println(string);
+        printWriter.flush();
     }
 }
