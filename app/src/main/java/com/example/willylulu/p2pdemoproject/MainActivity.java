@@ -1,6 +1,5 @@
 package com.example.willylulu.p2pdemoproject;
 
-import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pManager;
@@ -25,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        addLog("starting log v9");
+        addLog("starting log victory!!!");
         self = this;
         Button reset = (Button)findViewById(R.id.reset);
         reset.setOnClickListener(new View.OnClickListener() {
@@ -48,12 +47,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button create = (Button)findViewById(R.id.create);
-        create.setOnClickListener(new View.OnClickListener(){
+        Button socket = (Button)findViewById(R.id.socket);
+        socket.setOnClickListener(new View.OnClickListener(){
 
             @Override
             public void onClick(View v) {
-                createG();
+                p2pBroadCast.SocketInvatation();
+            }
+        });
+
+        Button message = (Button)findViewById(R.id.message);
+        message.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                addLog(p2pBroadCast.message);
             }
         });
 
@@ -68,10 +75,7 @@ public class MainActivity extends AppCompatActivity {
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
         addLog("intent filter finished");
-    }
-
-    private void createG() {
-        this.p2pBroadCast.createG();
+        p2pBroadCast.SocketListen();
     }
 
     /* register the broadcast receiver with the intent values to be matched */

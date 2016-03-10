@@ -10,8 +10,10 @@ import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.InetAddress;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -24,8 +26,10 @@ public class P2pBroadCast extends BroadcastReceiver{
     private Channel channel;
     private MainActivity activity;
     public P2pList p2pList;
+    private P2pBroadCast self;
+    private WifiP2pInfo info;
     private ServerSocket serverSocket;
-    private Socket socket;
+    public String message;
     public P2pBroadCast(WifiP2pManager manager, Channel channel,
                       final MainActivity activity){
         super();
@@ -33,6 +37,7 @@ public class P2pBroadCast extends BroadcastReceiver{
         this.channel = channel;
         this.activity = activity;
         this.p2pList = new P2pList(this);
+        this.self = this;
         this.wifiP2pManager.discoverPeers(this.channel, new WifiP2pManager.ActionListener() {
 
             @Override
@@ -45,22 +50,10 @@ public class P2pBroadCast extends BroadcastReceiver{
                 p2pDetectFailure(reason);
             }
         });
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                activity.addLog("Thread running");
-                try {
-                    serverSocket = new ServerSocket(8888);
-                    socket = serverSocket.accept();
-                    activity.addLog("dick");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        thread.start();
     }
-
+    public void SocketListen(){
+        JavaTCPServer jsp = new JavaTCPServer();
+    }
     private void p2pDetectFailure(int reason) {
         switch (reason){
             case 1: this.activity.addLog("P2P_UNSUPPORTED");
@@ -72,9 +65,8 @@ public class P2pBroadCast extends BroadcastReceiver{
     private void p2pDetectSuccess() {
         this.activity.addLog("Enable DiscoverPeers!");
     }
-
     public void onReceive(Context context, Intent intent) {
-        String action = intent.getAction();
+        final String action = intent.getAction();
         this.activity.addLog("Receive:\n" + action);
         if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
             int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
@@ -92,7 +84,7 @@ public class P2pBroadCast extends BroadcastReceiver{
             // callback on PeerListListener.onPeersAvailable()
             this.activity.addLog("There are other people!");
             if (wifiP2pManager != null) {
-                wifiP2pManager.requestPeers(channel,p2pList);
+                wifiP2pManager.requestPeers(channel, p2pList);
             }
         }
         else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
@@ -101,8 +93,7 @@ public class P2pBroadCast extends BroadcastReceiver{
                 return;
             }
 
-            NetworkInfo networkInfo = (NetworkInfo) intent
-                    .getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
+            NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
 
             if (networkInfo.isConnected()) {
 
@@ -119,26 +110,14 @@ public class P2pBroadCast extends BroadcastReceiver{
                         if (info.groupFormed && info.isGroupOwner) {
                             // Do whatever tasks are specific to the group owner.
                             // One common case is creating a server thread and accepting
-                            // incoming connections.
-                            activity.addLog("BOSS");
+                            // incoming connections
+                            activity.addLog("Boss!");
                         } else if (info.groupFormed) {
                             // The other device acts as the client. In this case,
                             // you'll want to create a client thread that connects to the group
                             // owner.
-                            activity.addLog("Client");
-                            InetAddress groupOwnerAddress = info.groupOwnerAddress;
-                            String s=groupOwnerAddress.getHostAddress();
-                            int port = 8888;
-                            activity.addLog(s);
-                            socket  = new Socket();
-                            try {
-                                socket.bind(null);
-                                activity.addLog(socket.getLocalAddress().toString());
-                                activity.addLog(socket.getInetAddress().toString());
-                                //socket.connect(new InetSocketAddress(s, port), 500);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                            activity.addLog("Client!");
+                            self.info = info;
                         }
                     }
                 });
@@ -146,6 +125,28 @@ public class P2pBroadCast extends BroadcastReceiver{
         }
     }
 
+    public void SocketInvatation() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Socket Rsocket = new Socket();
+                    Rsocket.bind(null);
+                    Rsocket.connect(new InetSocketAddress(info.groupOwnerAddress.getHostAddress(), 8888), 500);
+                    BufferedReader bufferReader = new BufferedReader(new InputStreamReader(Rsocket.getInputStream()));
+                    PrintWriter writer = new PrintWriter(Rsocket.getOutputStream());
+                    writer.println(new StringBuffer("Dick"));
+                    writer.flush();
+                    while (Rsocket.isConnected()){
+                        message = bufferReader.readLine();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
     public void exception(String s) {
         this.activity.addLog(s);
     }
@@ -168,20 +169,6 @@ public class P2pBroadCast extends BroadcastReceiver{
             @Override
             public void onFailure(int reason) {
                 activity.addLog("Connect Fail!!!");
-            }
-        });
-    }
-
-    public void createG() {
-        wifiP2pManager.createGroup(channel, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onSuccess() {
-                activity.addLog("Build success!!!");
-            }
-
-            @Override
-            public void onFailure(int reason) {
-                activity.addLog("Build Fail!!!");
             }
         });
     }

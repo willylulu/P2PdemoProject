@@ -71,9 +71,19 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Create"
-                android:id="@+id/create" />
+                android:text="Socket"
+                android:id="@+id/socket" />
         </LinearLayout>
     </ScrollView>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="message"
+        android:id="@+id/message"
+        android:layout_marginBottom="75dp"
+        android:layout_alignBottom="@+id/S_buttons"
+        android:layout_alignLeft="@+id/S_buttons"
+        android:layout_alignStart="@+id/S_buttons" />
 
 </RelativeLayout>
