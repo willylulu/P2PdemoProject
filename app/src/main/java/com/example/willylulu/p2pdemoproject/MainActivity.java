@@ -27,20 +27,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         addLog("starting log ver 10.0!");
         self = this;
-        Button reset = (Button)findViewById(R.id.reset);
-        reset.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                TextView textView = (TextView)findViewById(R.id.Log_text);
-                textView.setText("Reset\n");
-                wifiP2pManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
-                channel = wifiP2pManager.initialize(self, getMainLooper(), null);
-                p2pBroadCast = new P2pBroadCast(wifiP2pManager,channel,self);
-            }
-        });
 
         Button show = (Button)findViewById(R.id.show);
-        show.setOnClickListener(new View.OnClickListener(){
+        show.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -49,17 +38,15 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Button send = (Button)findViewById(R.id.send);
-        send.setOnClickListener(new View.OnClickListener(){
+        send.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                EditText editText = (EditText)findViewById(R.id.editText);
+                EditText editText = (EditText) findViewById(R.id.editText);
                 p2pBroadCast.sendText(editText.getText().toString());
             }
         });
-        send.setVisibility(View.INVISIBLE);
-        EditText editText = (EditText)findViewById(R.id.editText);
-        editText.setVisibility(View.INVISIBLE);
+
         wifiP2pManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         channel = wifiP2pManager.initialize(this, getMainLooper(), null);
         p2pBroadCast = new P2pBroadCast(wifiP2pManager,channel,this);
@@ -71,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
         addLog("intent filter finished");
-        p2pBroadCast.SocketListen();
     }
 
     /* register the broadcast receiver with the intent values to be matched */
@@ -84,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        unregisterReceiver(p2pBroadCast);
     }
     public void addLog(final String log){
         this.runOnUiThread(new Runnable() {
@@ -100,20 +85,32 @@ public class MainActivity extends AppCompatActivity {
     public void addDevices(){
         this.addLog("addDevices!");
         List<WifiP2pDevice> l = p2pBroadCast.p2pList.getPeers();
+        LinearLayout ll = (LinearLayout) findViewById(R.id.devices);
+        ll.removeAllViews();
         for(int i=0;i<l.size();i++){
             DeviceButton deviceButton  = new DeviceButton(this,p2pBroadCast,l.get(i));
-            LinearLayout ll = (LinearLayout) findViewById(R.id.devices);
             ll.addView(deviceButton);
         }
     }
-    public void OpenInput(){
+
+    public void hideSomething() {
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Button send = (Button) findViewById(R.id.send);
-                send.setVisibility(View.VISIBLE);
                 EditText editText = (EditText) findViewById(R.id.editText);
-                editText.setVisibility(View.VISIBLE);
+                editText.setVisibility(View.INVISIBLE);
+                Button send = (Button) findViewById(R.id.send);
+                send.setVisibility(View.INVISIBLE);
+            }
+        });
+    }
+    public void change_device_name(final String name)
+    {
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                TextView devicename= (TextView)findViewById(R.id.device_name);
+                devicename.setText(name);
             }
         });
     }

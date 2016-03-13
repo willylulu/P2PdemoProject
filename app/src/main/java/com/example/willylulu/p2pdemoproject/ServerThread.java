@@ -1,9 +1,6 @@
 package com.example.willylulu.p2pdemoproject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -12,33 +9,25 @@ import java.net.Socket;
  */
 public class ServerThread extends Thread{
     private ServerSocket serverSocket;
-    private Socket socket;
-    private BufferedReader bufferedReader;
-    private PrintWriter printWriter;
     private MainActivity mainActivity;
     public ServerThread(MainActivity mainActivity){
         try {
             serverSocket = new ServerSocket(8888);
-            this.mainActivity = mainActivity;
         } catch (IOException e) {
             e.printStackTrace();
         }
+        this.mainActivity = mainActivity;
     }
     public void run(){
-        try {
-            socket = serverSocket.accept();
-            bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            printWriter = new PrintWriter(socket.getOutputStream());
-            printWriter.println("Welcome!");
-            printWriter.flush();
-            while (socket.isConnected()){
-                String s = bufferedReader.readLine();
-                printWriter.println(s);
-                printWriter.flush();
-                mainActivity.addLog(s);
+        while(true) {
+            try {
+
+                Socket socket = serverSocket.accept();
+                ConnectThread connectThread = new ConnectThread(socket, mainActivity);
+                connectThread.start();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

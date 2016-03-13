@@ -21,6 +21,8 @@ public class ConnectThread extends Thread{
         try {
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.printWriter = new PrintWriter(socket.getOutputStream());
+            this.printWriter.println("Hello!");
+            this.printWriter.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -31,9 +33,6 @@ public class ConnectThread extends Thread{
             try {
                 String read = bufferedReader.readLine();
                 mainActivity.addLog(read);
-                if(read.equals("Welcome!")){
-                    mainActivity.OpenInput();
-                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

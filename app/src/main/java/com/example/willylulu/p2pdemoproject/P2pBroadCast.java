@@ -25,7 +25,6 @@ public class P2pBroadCast extends BroadcastReceiver{
     private WifiP2pInfo info;
     private ServerThread serverThread;
     private ConnectThread connectThread;
-    public String message;
     public P2pBroadCast(WifiP2pManager manager, Channel channel,
                       final MainActivity activity){
         super();
@@ -48,9 +47,6 @@ public class P2pBroadCast extends BroadcastReceiver{
         });
         this.serverThread = new ServerThread(activity);
         this.serverThread.start();
-    }
-    public void SocketListen(){
-
     }
     private void p2pDetectFailure(int reason) {
         switch (reason){
@@ -85,6 +81,12 @@ public class P2pBroadCast extends BroadcastReceiver{
                 wifiP2pManager.requestPeers(channel, p2pList);
             }
         }
+        else if (action.equals(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION))
+        {
+            WifiP2pDevice device = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
+            activity.change_device_name(device.deviceName);
+            // device.deviceName
+        }
         else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
 
             if (wifiP2pManager == null) {
@@ -98,11 +100,9 @@ public class P2pBroadCast extends BroadcastReceiver{
                 // We are connected with the other device, request connection
                 // info to find group owner IP
 
-                wifiP2pManager.requestConnectionInfo(channel, new WifiP2pManager.ConnectionInfoListener(){
-
+                wifiP2pManager.requestConnectionInfo(channel, new WifiP2pManager.ConnectionInfoListener() {
                     @Override
                     public void onConnectionInfoAvailable(final WifiP2pInfo info) {
-
                         // InetAddress from WifiP2pInfo struct.
                         // After the group negotiation, we can determine the group owner.
                         if (info.groupFormed && info.isGroupOwner) {
@@ -110,6 +110,7 @@ public class P2pBroadCast extends BroadcastReceiver{
                             // One common case is creating a server thread and accepting
                             // incoming connections
                             activity.addLog("Boss!");
+                            activity.hideSomething();
                         } else if (info.groupFormed) {
                             // The other device acts as the client. In this case,
                             // you'll want to create a client thread that connects to the group
@@ -131,7 +132,7 @@ public class P2pBroadCast extends BroadcastReceiver{
                 try {
                     Socket Rsocket = new Socket();
                     Rsocket.bind(null);
-                    Rsocket.connect(new InetSocketAddress(info.groupOwnerAddress.getHostAddress(), 8888), 500);
+                    Rsocket.connect(new InetSocketAddress(info.groupOwnerAddress.getHostAddress(),8888), 500);
                     connectThread = new ConnectThread(Rsocket,activity);
                     connectThread.start();
                 } catch (IOException e) {
@@ -150,7 +151,6 @@ public class P2pBroadCast extends BroadcastReceiver{
     }
 
     public void p2PConnect(WifiP2pDevice wifiP2pDevice) {
-        WifiP2pDevice device;
         WifiP2pConfig config = new WifiP2pConfig();
         config.deviceAddress = wifiP2pDevice.deviceAddress;
         wifiP2pManager.connect(channel, config, new WifiP2pManager.ActionListener() {
@@ -168,15 +168,6 @@ public class P2pBroadCast extends BroadcastReceiver{
     }
 
     public void sendText(String text) {
-        if (info.groupFormed && info.isGroupOwner) {
-            // Do whatever tasks are specific to the group owner.
-            // One common case is creating a server thread and accepting
-            // incoming connection
-        } else if (info.groupFormed) {
-            // The other device acts as the client. In this case,
-            // you'll want to create a client thread that connects to the group
-            // owner.
-            connectThread.sendText(text);
-        }
+        connectThread.sendText(text);
     }
 }
