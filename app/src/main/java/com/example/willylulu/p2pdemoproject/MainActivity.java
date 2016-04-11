@@ -92,18 +92,7 @@ public class MainActivity extends AppCompatActivity {
             ll.addView(deviceButton);
         }
     }
-
-    public void hideSomething() {
-        this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                EditText editText = (EditText) findViewById(R.id.editText);
-                editText.setVisibility(View.INVISIBLE);
-                Button send = (Button) findViewById(R.id.send);
-                send.setVisibility(View.INVISIBLE);
-            }
-        });
-    }
+    
     public void change_device_name(final String name)
     {
         this.runOnUiThread(new Runnable() {

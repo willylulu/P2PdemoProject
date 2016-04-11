@@ -21,7 +21,7 @@ public class ConnectThread extends Thread{
         try {
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.printWriter = new PrintWriter(socket.getOutputStream());
-            this.printWriter.println("Hello!");
+            this.printWriter.println("Hello! "+this.socket.getInetAddress());
             this.printWriter.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -41,6 +41,7 @@ public class ConnectThread extends Thread{
     }
 
     public void sendText(String string){
+        mainActivity.addLog("Send to:" + socket.getInetAddress());
         printWriter.println(string);
         printWriter.flush();
     }

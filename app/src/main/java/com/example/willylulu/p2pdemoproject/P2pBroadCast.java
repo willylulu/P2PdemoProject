@@ -45,7 +45,7 @@ public class P2pBroadCast extends BroadcastReceiver{
                 p2pDetectFailure(reason);
             }
         });
-        this.serverThread = new ServerThread(activity);
+        this.serverThread = new ServerThread(activity,this);
         this.serverThread.start();
     }
     private void p2pDetectFailure(int reason) {
@@ -55,7 +55,11 @@ public class P2pBroadCast extends BroadcastReceiver{
             case 2: this.activity.addLog("P2P_BUSY");
         }
     }
-
+    public void setConnectThread(ConnectThread connectThread)
+    {
+        this.connectThread = connectThread;
+        this.activity.addLog("Thread Connected!!!");
+    }
     private void p2pDetectSuccess() {
         this.activity.addLog("Enable DiscoverPeers!");
     }
@@ -110,7 +114,7 @@ public class P2pBroadCast extends BroadcastReceiver{
                             // One common case is creating a server thread and accepting
                             // incoming connections
                             activity.addLog("Boss!");
-                            activity.hideSomething();
+                            //activity.hideSomething();
                         } else if (info.groupFormed) {
                             // The other device acts as the client. In this case,
                             // you'll want to create a client thread that connects to the group
@@ -168,6 +172,7 @@ public class P2pBroadCast extends BroadcastReceiver{
     }
 
     public void sendText(String text) {
-        connectThread.sendText(text);
+        if(connectThread!=null)connectThread.sendText(text);
+        else activity.addLog("No Thread!");
     }
 }

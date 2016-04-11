@@ -10,20 +10,24 @@ import java.net.Socket;
 public class ServerThread extends Thread{
     private ServerSocket serverSocket;
     private MainActivity mainActivity;
-    public ServerThread(MainActivity mainActivity){
+    private ConnectThread connectThread;
+    private P2pBroadCast p2pBroadCast;
+    public ServerThread(MainActivity mainActivity, P2pBroadCast p2pBroadCast){
         try {
             serverSocket = new ServerSocket(8888);
         } catch (IOException e) {
             e.printStackTrace();
         }
         this.mainActivity = mainActivity;
+        this.p2pBroadCast = p2pBroadCast;
     }
     public void run(){
         while(true) {
             try {
 
                 Socket socket = serverSocket.accept();
-                ConnectThread connectThread = new ConnectThread(socket, mainActivity);
+                connectThread = new ConnectThread(socket, mainActivity);
+                p2pBroadCast.setConnectThread(connectThread);
                 connectThread.start();
             } catch (IOException e) {
                 e.printStackTrace();
